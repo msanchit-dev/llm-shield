@@ -32,27 +32,26 @@ flowchart TD
     subgraph Input Pipeline
         AppIn[Calling Application] -->|scan_input| OrchIn[Shield Orchestrator]
         OrchIn --> LenCheck{Length <= 4000?}
-        LenCheck -->|Exceeds| Audit[(Security Audit Sink)]
+        LenCheck -->|Exceeds| AuditIn[(Security Audit Sink)]
         LenCheck -->|Pass| L1[Layer 1: Pattern Matcher]
-        L1 -->|Block| Audit
+        L1 -->|Block| AuditIn
         L1 -->|Pass| L2Opt{L2 Enabled?}
         L2Opt -->|No| AllowIn[ALLOW Input]
         L2Opt -->|Yes| L2[Layer 2: Semantic Judge]
-        L2 -->|Block / Error| Audit
+        L2 -->|Block / Error| AuditIn
         L2 -->|Pass| AllowIn
-        AllowIn --> Audit
+        AllowIn --> AuditIn
     end
 
     subgraph Output Pipeline
         ModelOut[Model Output] -->|scan_output| OrchOut[Shield Orchestrator]
         OrchOut --> UnsafeCode[Unsafe Code Detector]
         UnsafeCode -->|Block| RedactBlock[Inline Scrubbing]
-        RedactBlock --> Audit
+        RedactBlock --> AuditOut[(Security Audit Sink)]
         UnsafeCode -->|Pass| PIIRedact[PII Redactor]
         PIIRedact -->|Pass / Redact| CleanOut[CLEAN Output]
-        CleanOut --> Audit
+        CleanOut --> AuditOut
     end
-
 ```
 
 ### 2.2 Subsystem & Component Inventory
